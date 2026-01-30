@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import Counter, defaultdict
 
 def load_graph():
     file = open("allyeastJan14_2002-nr.txt", "r")
@@ -45,25 +46,47 @@ def create_e_vdeg(nodes, edges, nodes_to_index):
 
     return e, vdeg
 
-from collections import Counter
 def create_hist(vdeg):
-    # 1. Count frequencies
     counts = Counter(vdeg)
     x, y = zip(*sorted(counts.items()))
 
-    # 2. Plot as scatter or line
     plt.scatter(x, y)
 
-    # 3. Scale axes
     plt.xscale('log')
     plt.yscale('log')
 
     plt.xlabel('Degree (k)')
     plt.ylabel('Frequency')
-    plt.show()
+    plt.savefig("hist.png")
+
+def k_cores(vdeg, e):
+    cores = np.zeros((len(vdeg)), dtype=np.uint32)
+    sorted_indices = sorted(range(len(vdeg)), key=lambda i: vdeg[i])
+
+    adj_list = defaultdict(set)
+    for v in range(len(vdeg)):
+        for u in range(len(vdeg)):
+            if e[u,v] or e[v,u]:
+                adj_list[v].add(u)
+
+    while sorted_indices:
+        v = sorted_indices.pop(0)
+        cores[v] = vdeg[v]
+        reorder = False
+        for u in adj_list[v]:
+            if vdeg[u] > vdeg[v]:
+                vdeg[u] -= 1
+                reorder = True
+        if reorder:
+            sorted_indices.sort(key=lambda v: vdeg[v])
+
+    return cores
+    
     
 
 nodes, edges, nodes_to_index = load_graph()
 e, vdeg = create_e_vdeg(nodes, edges, nodes_to_index)
 create_hist(vdeg)
+cores = k_cores(vdeg, e)
+print(f"number of cores: {len(set(cores))}, max: {max(cores)}, min: {min(cores)}")
 

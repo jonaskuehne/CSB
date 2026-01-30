@@ -1,6 +1,0 @@
-Abp1	Cla4
-Abp1	Rvs167
-Abp1	Srv2
-Abp1	Ynl094w
-Abp1	Yor284w
-Acf2	Rvs167
